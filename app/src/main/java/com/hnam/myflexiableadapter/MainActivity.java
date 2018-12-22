@@ -7,19 +7,27 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 
+import com.hnam.myflexiableadapter.loadmore.ProgressItem;
 import com.hnam.myflexiableadapter.section.DataFactory;
 import com.hnam.myflexiableadapter.section.ExampleAdapter;
+import com.hnam.myflexiableadapter.section.HeaderItem;
+import com.hnam.myflexiableadapter.section.SimpleItem;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Timer;
 
 
 import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.common.SmoothScrollLinearLayoutManager;
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem;
 import eu.davidea.flexibleadapter.items.IFlexible;
+import eu.davidea.flexibleadapter.items.IHeader;
 
 public class MainActivity extends AppCompatActivity {
+
+    ExampleAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,22 +43,75 @@ public class MainActivity extends AppCompatActivity {
 //        FlexibleAdapter<IFlexible> adapter = new FlexibleAdapter<>(myItems);
 
         //header data
-        List<AbstractFlexibleItem> myItems = DataFactory.getData(100, 5);
-        ExampleAdapter adapter= new ExampleAdapter(myItems, this);
+        final List<AbstractFlexibleItem> myItems = DataFactory.getData(50, 5);
+        mAdapter= new ExampleAdapter(myItems, this);
 
 
         // Initialize the RecyclerView and attach the Adapter to it as usual
         RecyclerView rv = findViewById(R.id.rv);
-        rv.setAdapter(adapter);
+        rv.setAdapter(mAdapter);
         rv.setLayoutManager(createNewLinearLayoutManager());
         rv.setHasFixedSize(true); //Size of RV will not change
 
         // More settings
-        adapter.setStickyHeaderElevation(5)
+        mAdapter.setStickyHeaderElevation(5)
                 // Show Headers at startUp, 1st call, correctly executed, no warning log message!
                 .setDisplayHeadersAtStartUp(true)
                 .setStickyHeaders(true);
 
+        mAdapter.setEndlessScrollListener(new FlexibleAdapter.EndlessScrollListener() {
+            @Override
+            public void noMoreLoad(int newItemsSize) {
+                Log.e(TAG, "setEndlessScrollListener() -> noMoreLoad=" + newItemsSize);
+            }
+
+            @Override
+            public void onLoadMore(int lastPosition, int currentPage) {
+                Log.e(TAG, "setEndlessScrollListener() -> lastPosition=" + lastPosition + " currentPage=%s" + currentPage);
+                HeaderItem h = DataFactory.newHeader(5);
+                SimpleItem item = DataFactory.newSimpleItem(1000, h);
+
+                HeaderItem h2 = DataFactory.newHeader(lastPosition / 5 + 1);
+                SimpleItem item1 = DataFactory.newSimpleItem(1000, h);
+                SimpleItem item2 = DataFactory.newSimpleItem(1000, h);
+                SimpleItem item3 = DataFactory.newSimpleItem(1000, h);
+                SimpleItem item4 = DataFactory.newSimpleItem(1000, h);
+                SimpleItem item5 = DataFactory.newSimpleItem(1000, h);
+                SimpleItem item6 = DataFactory.newSimpleItem(1000, h);
+
+
+                List<AbstractFlexibleItem> data = new ArrayList<>();
+                data.add(item);
+                data.add(item1);
+                data.add(item2);
+                data.add(item3);
+                data.add(item4);
+                data.add(item5);
+                data.add(item6);
+                onLoadMoreComplete(data);
+            }
+        }, new ProgressItem()).setEndlessScrollThreshold(5); // Default=1;
+
+    }
+
+    public void onLoadMoreComplete(final List<AbstractFlexibleItem> newItems) {
+        // Callback the Adapter to notify the change:
+        // - New items will be added to the end of the main list and progressItem
+        //   will be hidden.
+        // - Instead, when list is null or empty, and limits are reached, Endless
+        //   scroll will be disabled. To enable again, you must call
+        //   setEndlessProgressItem(@Nullable T progressItem).
+
+
+        mAdapter.onLoadMoreComplete(newItems, 3000L);
+
+
+        // You can retrieve the new page number after adding new items!
+        Log.d(TAG, "EndlessCurrentPage=" + mAdapter.getEndlessCurrentPage());
+        Log.d(TAG, "EndlessPageSize=" + mAdapter.getEndlessPageSize());
+        Log.d(TAG, "EndlessTargetCount=" + mAdapter.getEndlessTargetCount());
+
+        // Notify user
     }
 
     protected LinearLayoutManager createNewLinearLayoutManager() {

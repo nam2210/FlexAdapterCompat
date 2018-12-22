@@ -45,6 +45,14 @@ public class SimpleItem extends AbstractFlexibleItem<SimpleItem.SimpleViewHolder
         return false;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
     @Override
     public int hashCode() {
         return id.hashCode();
@@ -74,8 +82,7 @@ public class SimpleItem extends AbstractFlexibleItem<SimpleItem.SimpleViewHolder
 
     @Override
     public void bindViewHolder(FlexibleAdapter<IFlexible> adapter, SimpleViewHolder holder, int position, List<Object> payloads) {
-        Log.e(this.getClass().getSimpleName(), "bindViewHolder simpleItem" + id );
-        holder.title.setText("Data " + position);
+        holder.title.setText("Data " + id);
     }
 
 

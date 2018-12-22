@@ -24,11 +24,11 @@ public class DataFactory {
         return mItems;
     }
 
-    private static HeaderItem newHeader(int id){
+    public static HeaderItem newHeader(int id){
         return new HeaderItem(String.valueOf(id));
     }
 
-    private static SimpleItem newSimpleItem(int id, HeaderItem header){
+    public static SimpleItem newSimpleItem(int id, HeaderItem header){
         return new SimpleItem(String.valueOf(id), header);
     }
 }
