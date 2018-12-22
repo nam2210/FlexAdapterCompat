@@ -12,8 +12,9 @@ import eu.davidea.viewholders.FlexibleViewHolder;
 public class MyViewHolder extends FlexibleViewHolder {
     public TextView mTitle;
 
-    public MyViewHolder(View view, FlexibleAdapter adapter) {
+    public MyViewHolder(View view, final FlexibleAdapter adapter) {
         super(view, adapter);
         mTitle = (TextView) view.findViewById(R.id.title);
+
     }
 }
