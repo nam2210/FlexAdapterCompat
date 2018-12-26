@@ -71,7 +71,7 @@ public class HeaderItem extends AbstractHeaderItem<HeaderItem.HeaderViewHolder> 
     @Override
     public void bindViewHolder(FlexibleAdapter<IFlexible> adapter, HeaderViewHolder holder, int position, List<Object> payloads) {
         if (payloads.size() > 0) {
-            Log.e(this.getClass().getSimpleName(), "HeaderItem " + id + " Payload " + payloads);
+            //Log.e(this.getClass().getSimpleName(), "HeaderItem " + id + " Payload " + payloads);
         } else {
             holder.tvTitle.setText(getTitle());
         }

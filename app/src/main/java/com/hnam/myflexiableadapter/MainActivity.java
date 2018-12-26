@@ -1,5 +1,7 @@
 package com.hnam.myflexiableadapter;
 
+import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,6 +16,7 @@ import com.hnam.myflexiableadapter.section.HeaderItem;
 import com.hnam.myflexiableadapter.section.SimpleItem;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Timer;
@@ -24,6 +27,7 @@ import eu.davidea.flexibleadapter.common.SmoothScrollLinearLayoutManager;
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import eu.davidea.flexibleadapter.items.IHeader;
+import eu.davidea.flexibleadapter.items.ISectionable;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -63,34 +67,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void noMoreLoad(int newItemsSize) {
                 Log.e(TAG, "setEndlessScrollListener() -> noMoreLoad=" + newItemsSize);
+                mAdapter.setEndlessProgressItem(new ProgressItem());
             }
 
             @Override
             public void onLoadMore(int lastPosition, int currentPage) {
                 Log.e(TAG, "setEndlessScrollListener() -> lastPosition=" + lastPosition + " currentPage=%s" + currentPage);
                 HeaderItem h = DataFactory.newHeader(5);
-                SimpleItem item = DataFactory.newSimpleItem(1000, h);
-
-                HeaderItem h2 = DataFactory.newHeader(lastPosition / 5 + 1);
-                SimpleItem item1 = DataFactory.newSimpleItem(1000, h);
-                SimpleItem item2 = DataFactory.newSimpleItem(1000, h);
-                SimpleItem item3 = DataFactory.newSimpleItem(1000, h);
-                SimpleItem item4 = DataFactory.newSimpleItem(1000, h);
-                SimpleItem item5 = DataFactory.newSimpleItem(1000, h);
-                SimpleItem item6 = DataFactory.newSimpleItem(1000, h);
-
-
+                SimpleItem item = DataFactory.newSimpleItem(10001, h);
                 List<AbstractFlexibleItem> data = new ArrayList<>();
                 data.add(item);
-                data.add(item1);
-                data.add(item2);
-                data.add(item3);
-                data.add(item4);
-                data.add(item5);
-                data.add(item6);
+
+                HeaderItem h2 = DataFactory.newHeader(lastPosition / 5 + 1);
+                for(int i = 1; i < 21; i++){
+                    SimpleItem item1 = DataFactory.newSimpleItem(1000+i, h);
+                    data.add(item1);
+                }
+
                 onLoadMoreComplete(data);
             }
-        }, new ProgressItem()).setEndlessScrollThreshold(5); // Default=1;
+        }, new ProgressItem()).setEndlessScrollThreshold(5)
+        .setEndlessPageSize(5); // Default=1;
 
     }
 
@@ -101,15 +98,32 @@ public class MainActivity extends AppCompatActivity {
         // - Instead, when list is null or empty, and limits are reached, Endless
         //   scroll will be disabled. To enable again, you must call
         //   setEndlessProgressItem(@Nullable T progressItem).
+        Log.e(TAG,"load more >>>>>>");
+        int lastPosition = mAdapter.getItemCount() - 2;
+        AbstractFlexibleItem item = mAdapter.getItem(lastPosition);
+        HeaderItem h = null;
+        if (item instanceof SimpleItem){
+            h = ((SimpleItem) item).getHeader();
+        } else if (item instanceof HeaderItem){
+            h = (HeaderItem) item;
+        }
+
+        if (h == null){
+            return;
+        }
+        for (int i = 0; i < newItems.size(); i++){
+            AbstractFlexibleItem ni = newItems.get(i);
+            if (ni instanceof SimpleItem && ((SimpleItem) ni).getHeader().equals(h)){
+                mAdapter.addItemToSection((ISectionable) ni, h, mAdapter.getItemCount() - 1 + i);
+            }
+        }
 
 
-        mAdapter.onLoadMoreComplete(newItems, 3000L);
+        mAdapter.onLoadMoreComplete(Collections.<AbstractFlexibleItem>emptyList(), 0);
 
 
-        // You can retrieve the new page number after adding new items!
-        Log.d(TAG, "EndlessCurrentPage=" + mAdapter.getEndlessCurrentPage());
-        Log.d(TAG, "EndlessPageSize=" + mAdapter.getEndlessPageSize());
-        Log.d(TAG, "EndlessTargetCount=" + mAdapter.getEndlessTargetCount());
+
+
 
         // Notify user
     }
